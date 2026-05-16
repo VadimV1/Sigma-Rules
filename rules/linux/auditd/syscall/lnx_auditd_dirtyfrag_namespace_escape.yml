@@ -4,8 +4,6 @@ status: stable
 description: >
     Detects unprivileged unshare() with CLONE_NEWUSER combined with any network/PID/UTS namespace flag.
     Stage 1 of the DirtyFrag LPE chain (CVE-2026-43284).
-
-    Detection tier: **class-atomic** — Path A requires CAP_NET_ADMIN to register XFRM Security Associations; for an unprivileged user, the new-user-namespace path is the kernel mechanism that grants it.
 references:
     - https://github.com/V4bel/dirtyfrag
     - https://www.openwall.com/lists/oss-security/2026/05/07/8
