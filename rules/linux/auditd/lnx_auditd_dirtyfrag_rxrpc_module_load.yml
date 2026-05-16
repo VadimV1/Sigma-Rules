@@ -5,8 +5,6 @@ description: >
     Detects the rxrpc kernel module loading. DirtyFrag triggers autoload by opening a
     dummy AF_RXRPC socket. On hosts not running AFS, rxrpc.ko should never appear in
     lsmod — establish a baseline before deploying.
-
-    Detection tier: **class-atomic** — rxrpc.ko must be loaded for the rxkad code path to exist; the autoload via MODULE_ALIAS_NETPROTO(PF_RXRPC) is forced.
 references:
     - https://github.com/V4bel/dirtyfrag
 author: 'VadimV1'
