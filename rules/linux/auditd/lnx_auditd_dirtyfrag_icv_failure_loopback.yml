@@ -1,0 +1,39 @@
+title: DirtyFrag - IPsec ICV Failure on Loopback
+id: e8f0a2b4-c6d8-4e0f-b391-c6d8e0f2a4b6
+status: stable
+description: >
+    Detects MAC_IPSEC_EVENT SA-icv-failure on loopback — fires once per
+    crafted ESP packet during DirtyFrag Path A exploitation (48 events per
+    run). The exploit's payload is intentionally garbage (memset(0xCC) at
+    exp.c:260) because the write primitive lives at the pre-ICV step of the
+    receive pipeline (seq_hi write at step 2). ICV verification therefore
+    always fails by design.
+
+    Detection tier: **class-atomic** — the seq_hi-write primitive at step 2
+    of the receive pipeline requires the kernel to reach the ICV check stage
+    with crafted payload; the failure is mechanically tied to the exploit's
+    write step.
+references:
+    - https://github.com/V4bel/dirtyfrag
+    - https://elixir.bootlin.com/linux/latest/source/net/xfrm/xfrm_state.c
+author: 'VadimV1'
+date: 2026-05-13
+modified: 2026-05-14
+tags:
+    - attack.privilege-escalation
+    - attack.t1068
+logsource:
+    product: linux
+    service: auditd
+detection:
+    selection:
+        type: 'MAC_IPSEC_EVENT'
+        op: 'SA-icv-failure'
+        src: '127.0.0.1'
+        dst: '127.0.0.1'
+    filter_unset_auid:
+        auid: 4294967295
+    condition: selection and not filter_unset_auid
+falsepositives:
+    - Kernel selftest harnesses exercising xfrm on loopback
+level: high

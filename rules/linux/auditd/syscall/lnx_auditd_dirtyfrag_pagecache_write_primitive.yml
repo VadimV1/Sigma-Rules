@@ -1,0 +1,37 @@
+title: DirtyFrag - Page Cache Write via vmsplice and splice
+id: c2d4e6f8-1b3a-4c5d-9e7f-0a2b4c6d8e0f
+status: stable
+description: Detects vmsplice() or splice() from a non-root process, the page-cache write primitive used in both DirtyFrag LPE paths.
+
+    Detection tier: **class-atomic** — the page-cache routing primitive requires the splice chain to land a target file's page-cache page reference inside the kernel's send-side skb such that the recv-side in-place crypto writes back into that same physical page. Shared by both Path A (xfrm-ESP → /usr/bin/su) and Path B (rxrpc-rxkad → /etc/passwd).
+references:
+    - https://github.com/V4bel/dirtyfrag
+author: 'VadimV1'
+date: 2026-05-13
+modified: 2026-05-14
+tags:
+    - attack.privilege-escalation
+    - attack.t1068
+logsource:
+    product: linux
+    service: auditd
+    definition: |
+        Required auditd configuration:
+        -a always,exit -F arch=b64 -S vmsplice -k pagecache_write_primitive
+        -a always,exit -F arch=b64 -S splice -k pagecache_write_primitive
+        -a always,exit -F arch=b32 -S vmsplice -k pagecache_write_primitive
+        -a always,exit -F arch=b32 -S splice -k pagecache_write_primitive
+detection:
+    selection:
+        type: 'SYSCALL'
+        SYSCALL:
+            - 'vmsplice'
+            - 'splice'
+    filter_root:
+        uid: 0
+    condition: selection and not filter_root
+falsepositives:
+    - High-performance data pipelines, video processing tools
+    - nginx with sendfile_max_chunk, HAProxy, postgres WAL streaming
+    - rsync with --whole-file --inplace, GStreamer/ffmpeg
+level: low

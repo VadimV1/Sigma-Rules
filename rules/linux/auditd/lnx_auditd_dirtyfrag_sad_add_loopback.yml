@@ -1,0 +1,43 @@
+title: DirtyFrag - IPsec SA Registration on Loopback
+id: 9d1f4e3b-7c2a-4b8e-a5f9-d3e6c1b8a4f2
+status: stable
+description: >
+    Detects MAC_IPSEC_EVENT SAD-add on loopback (src=127.0.0.1 dst=127.0.0.1)
+    from a non-IPsec-daemon process — the kernel-native anchor for DirtyFrag
+    Path A (CVE-2026-43284). Fires when the malicious XFRM Security
+    Association is registered; the SA must exist before any packet processing
+    begins, and the namespace escape forces loopback addresses on the SA.
+
+    Detection tier: **class-atomic** — kernel-native, no auditd rule required.
+    The SA registration is a structural prerequisite of the exploit's receive
+    pipeline; xfrm_state_add() always emits the audit record.
+references:
+    - https://github.com/V4bel/dirtyfrag
+    - https://elixir.bootlin.com/linux/latest/source/net/xfrm/xfrm_state.c
+author: 'VadimV1'
+date: 2026-05-14
+tags:
+    - attack.privilege-escalation
+    - attack.t1068
+logsource:
+    product: linux
+    service: auditd
+detection:
+    selection:
+        type: 'MAC_IPSEC_EVENT'
+        op: 'SAD-add'
+        src: '127.0.0.1'
+        dst: '127.0.0.1'
+    filter_unset_auid:
+        auid: 4294967295
+    filter_ipsec_daemons:
+        comm:
+            - 'charon'
+            - 'pluto'
+            - 'racoon'
+            - 'ipsec'
+    condition: selection and not filter_unset_auid and not filter_ipsec_daemons
+falsepositives:
+    - Kernel selftest harnesses exercising xfrm on loopback
+    - Custom IPsec testing tools running against loopback
+level: critical

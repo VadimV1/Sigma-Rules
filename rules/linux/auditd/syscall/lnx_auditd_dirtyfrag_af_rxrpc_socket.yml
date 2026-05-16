@@ -1,0 +1,37 @@
+title: DirtyFrag - Unprivileged AF_RXRPC Socket Creation
+id: 9c2d4f6e-8b3a-4d5e-c7f9-1a3b5c7d9e0f
+status: stable
+description: >
+    Detects an unprivileged process creating an AF_RXRPC socket (family=33, 0x21 hex).
+    Outside AFS infrastructure, this socket family has no legitimate non-root use.
+    Run `lsmod | grep rxrpc` against your baseline — on hosts where the module is not
+    loaded, this rule has near-zero false-positive surface.
+
+    Detection tier: **class-atomic** — AF_RXRPC is the kernel socket family the rxkad subsystem operates on; opening it is a structural prerequisite of Path B.
+references:
+    - https://github.com/V4bel/dirtyfrag
+    - https://www.sysdig.com/blog/dirty-frag-cve-2026-43284-and-cve-2026-43500-detecting-unpatched-local-privilege-escalation-via-linux-kernel-esp-and-rxrpc
+author: 'VadimV1'
+date: 2026-05-13
+modified: 2026-05-14
+tags:
+    - attack.privilege-escalation
+    - attack.t1068
+logsource:
+    product: linux
+    service: auditd
+    definition: |
+        Required auditd configuration:
+        -a always,exit -F arch=b64 -S socket -F a0=33 -k dirtyfrag_rxrpc_socket
+        -a always,exit -F arch=b32 -S socket -F a0=33 -k dirtyfrag_rxrpc_socket
+detection:
+    selection:
+        type: 'SYSCALL'
+        SYSCALL: 'socket'
+        a0: 21
+    filter_root:
+        uid: 0
+    condition: selection and not filter_root
+falsepositives:
+    - OpenAFS client/server processes (kafs, aklog, fs, pts, vos)
+level: critical
