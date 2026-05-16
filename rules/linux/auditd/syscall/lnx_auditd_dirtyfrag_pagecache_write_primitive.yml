@@ -2,8 +2,6 @@ title: DirtyFrag - Page Cache Write via vmsplice and splice
 id: c2d4e6f8-1b3a-4c5d-9e7f-0a2b4c6d8e0f
 status: stable
 description: Detects vmsplice() or splice() from a non-root process, the page-cache write primitive used in both DirtyFrag LPE paths.
-
-    Detection tier: **class-atomic** — the page-cache routing primitive requires the splice chain to land a target file's page-cache page reference inside the kernel's send-side skb such that the recv-side in-place crypto writes back into that same physical page. Shared by both Path A (xfrm-ESP → /usr/bin/su) and Path B (rxrpc-rxkad → /etc/passwd).
 references:
     - https://github.com/V4bel/dirtyfrag
 author: 'VadimV1'
