@@ -6,8 +6,6 @@ description: >
     Outside AFS infrastructure, this socket family has no legitimate non-root use.
     Run `lsmod | grep rxrpc` against your baseline — on hosts where the module is not
     loaded, this rule has near-zero false-positive surface.
-
-    Detection tier: **class-atomic** — AF_RXRPC is the kernel socket family the rxkad subsystem operates on; opening it is a structural prerequisite of Path B.
 references:
     - https://github.com/V4bel/dirtyfrag
     - https://www.sysdig.com/blog/dirty-frag-cve-2026-43284-and-cve-2026-43500-detecting-unpatched-local-privilege-escalation-via-linux-kernel-esp-and-rxrpc
