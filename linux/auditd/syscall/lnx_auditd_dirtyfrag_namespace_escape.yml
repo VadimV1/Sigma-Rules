@@ -1,0 +1,43 @@
+title: DirtyFrag - Unprivileged User and Network Namespace Escape
+id: f4b3e2d1-8a7c-4f5e-b6d9-2c1a0e9f3b4d
+status: stable
+description: >
+    Detects unprivileged unshare() with CLONE_NEWUSER combined with any network/PID/UTS namespace flag.
+    Stage 1 of the DirtyFrag LPE chain (CVE-2026-43284).
+
+    Detection tier: **class-atomic** — Path A requires CAP_NET_ADMIN to register XFRM Security Associations; for an unprivileged user, the new-user-namespace path is the kernel mechanism that grants it.
+references:
+    - https://github.com/V4bel/dirtyfrag
+    - https://www.openwall.com/lists/oss-security/2026/05/07/8
+author: 'VadimV1'
+date: 2026-05-13
+modified: 2026-05-14
+tags:
+    - attack.privilege-escalation
+    - attack.t1068
+logsource:
+    product: linux
+    service: auditd
+    definition: |
+        Required auditd configuration:
+        -a always,exit -F arch=b64 -S unshare -F a0=268435456 -k net_userns_escape
+        -a always,exit -F arch=b64 -S unshare -F a0=1342177280 -k net_userns_escape
+        -a always,exit -F arch=b64 -S unshare -F a0=1879048192 -k net_userns_escape
+        -a always,exit -F arch=b32 -S unshare -F a0=268435456 -k net_userns_escape
+        -a always,exit -F arch=b32 -S unshare -F a0=1342177280 -k net_userns_escape
+        -a always,exit -F arch=b32 -S unshare -F a0=1879048192 -k net_userns_escape
+detection:
+    selection:
+        type: 'SYSCALL'
+        SYSCALL: 'unshare'
+        a0|contains:
+            - '10000000'
+            - '50000000'
+            - '70000000'
+    filter_root:
+        uid: 0
+    condition: selection and not filter_root
+falsepositives:
+    - Rootless container runtimes (Docker, Podman), systemd-nspawn -U
+    - bubblewrap (Flatpak, GNOME), Firefox/Chrome sandbox if userns enabled
+level: high

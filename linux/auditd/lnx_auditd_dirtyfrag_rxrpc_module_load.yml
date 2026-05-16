@@ -1,0 +1,33 @@
+title: DirtyFrag - rxrpc.ko Kernel Module Load
+id: 7e1c3d5a-9b4f-4e6a-d8c0-2b4d6f8a0c2e
+status: stable
+description: >
+    Detects the rxrpc kernel module loading. DirtyFrag triggers autoload by opening a
+    dummy AF_RXRPC socket. On hosts not running AFS, rxrpc.ko should never appear in
+    lsmod — establish a baseline before deploying.
+
+    Detection tier: **class-atomic** — rxrpc.ko must be loaded for the rxkad code path to exist; the autoload via MODULE_ALIAS_NETPROTO(PF_RXRPC) is forced.
+references:
+    - https://github.com/V4bel/dirtyfrag
+author: 'VadimV1'
+date: 2026-05-13
+modified: 2026-05-14
+tags:
+    - attack.privilege-escalation
+    - attack.persistence
+    - attack.t1547.006
+logsource:
+    product: linux
+    service: auditd
+    definition: |
+        Required auditd configuration:
+        -a always,exit -F arch=b64 -S init_module -S finit_module -k kernel_module_load
+        -a always,exit -F arch=b32 -S init_module -S finit_module -k kernel_module_load
+detection:
+    selection:
+        type: 'KERN_MODULE'
+        name: 'rxrpc'
+    condition: selection
+falsepositives:
+    - AFS client deployments (kafs/openafs)
+level: high

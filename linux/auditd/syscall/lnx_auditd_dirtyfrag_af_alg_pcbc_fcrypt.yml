@@ -1,0 +1,38 @@
+title: DirtyFrag - AF_ALG Socket from Unprivileged Process (RxRPC checksum prep)
+id: b6c8d0e2-f4a6-48b8-da0c-3e5f7a9b1c3d
+status: stable
+description: >
+    Detects an unprivileged process opening an AF_ALG socket (family=38, 0x26 hex).
+    DirtyFrag's RxRPC path opens AF_ALG and binds to pcbc(fcrypt) to compute matching
+    rxkad packet checksums before each kernel trigger. pcbc(fcrypt) is the AFS Kerberos
+    session-key cipher with no legitimate non-AFS use.
+
+    Detection tier: **class-atomic** — the rxkad checksum-prep step requires this AF_ALG socket to compute the per-trigger csum_iv and cksum values the kernel will compare against on the receive side.
+references:
+    - https://github.com/V4bel/dirtyfrag
+    - https://www.sysdig.com/blog/dirty-frag-cve-2026-43284-and-cve-2026-43500-detecting-unpatched-local-privilege-escalation-via-linux-kernel-esp-and-rxrpc
+author: 'VadimV1'
+date: 2026-05-13
+modified: 2026-05-14
+tags:
+    - attack.privilege-escalation
+    - attack.t1068
+logsource:
+    product: linux
+    service: auditd
+    definition: |
+        Required auditd configuration:
+        -a always,exit -F arch=b64 -S socket -F a0=38 -k dirtyfrag_af_alg_socket
+        -a always,exit -F arch=b32 -S socket -F a0=38 -k dirtyfrag_af_alg_socket
+detection:
+    selection:
+        type: 'SYSCALL'
+        SYSCALL: 'socket'
+        a0: 26
+    filter_root:
+        uid: 0
+    condition: selection and not filter_root
+falsepositives:
+    - OpenAFS / kafs daemons authenticating with rxkad
+    - Crypto research tools exercising kernel skcipher API
+level: high
