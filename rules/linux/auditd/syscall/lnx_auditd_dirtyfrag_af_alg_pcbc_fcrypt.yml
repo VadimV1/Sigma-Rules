@@ -6,8 +6,6 @@ description: >
     DirtyFrag's RxRPC path opens AF_ALG and binds to pcbc(fcrypt) to compute matching
     rxkad packet checksums before each kernel trigger. pcbc(fcrypt) is the AFS Kerberos
     session-key cipher with no legitimate non-AFS use.
-
-    Detection tier: **class-atomic** — the rxkad checksum-prep step requires this AF_ALG socket to compute the per-trigger csum_iv and cksum values the kernel will compare against on the receive side.
 references:
     - https://github.com/V4bel/dirtyfrag
     - https://www.sysdig.com/blog/dirty-frag-cve-2026-43284-and-cve-2026-43500-detecting-unpatched-local-privilege-escalation-via-linux-kernel-esp-and-rxrpc
