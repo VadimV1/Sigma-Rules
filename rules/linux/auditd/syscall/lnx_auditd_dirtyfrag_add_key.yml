@@ -4,8 +4,6 @@ status: stable
 description: >
     Detects an unprivileged interactive user calling add_key. DirtyFrag's RxRPC path
     uses this to install brute-forced pcbc(fcrypt) session keys before each kernel trigger.
-
-    Detection tier: **class-atomic** — rxkad_verify_packet_1() requires the brute-forced session key to be registered via add_key before the trigger packet is sent.
 references:
     - https://github.com/V4bel/dirtyfrag
 author: 'VadimV1'
