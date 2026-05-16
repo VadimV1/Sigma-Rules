@@ -2,8 +2,6 @@ title: DirtyFrag - Unprivileged XFRM Netlink Socket
 id: a9b5c3f7-2e4d-4a1b-8c6d-0f7e3d2b1a9c
 status: stable
 description: Detects an unprivileged AF_NETLINK/NETLINK_XFRM socket used to register fake IPsec SAs.
-
-    Detection tier: **class-atomic** — the kernel mechanism requires netlink-XFRM to deliver the attacker-shaped seq_hi field that drives the page-cache write primitive.
 references:
     - https://github.com/V4bel/dirtyfrag
 author: 'VadimV1'
